@@ -1,0 +1,297 @@
+digraph ArbolDerivacionMaestro {
+
+    rankdir=TB;
+
+    node [shape=none, fontname="Courier", fontsize=10];
+
+    edge [arrowhead=none, color=gray60];
+
+
+
+    // --- RAÍZ ---
+
+    n0 [label="programa"];
+
+    n1 [label="bloque"];
+
+    n0 -> n1;
+
+
+
+    n1 -> "{" [label=" "];
+
+    n1 -> n_decls_raiz [label="decls"];
+
+    n1 -> n_instrs_raiz [label="instrs"];
+
+    n1 -> "}" [label=" "];
+
+
+
+    // --- DECLS (Siguiendo el esquema del maestro: decls -> decls decl | epsilon) ---
+
+    n_decls_raiz -> n_decls_4;
+
+    n_decls_raiz -> n_decl_5; // float[100] a;
+
+
+
+    n_decls_4 -> n_decls_3;
+
+    n_decls_4 -> n_decl_4; // float x;
+
+
+
+    n_decls_3 -> n_decls_2;
+
+    n_decls_3 -> n_decl_3; // float v;
+
+
+
+    n_decls_2 -> n_decls_1;
+
+    n_decls_2 -> n_decl_2; // int j;
+
+
+
+    n_decls_1 -> n_decls_0;
+
+    n_decls_1 -> n_decl_1; // int i;
+
+    
+
+    n_decls_0 [label="ε"];
+
+
+
+    // --- DETALLE DE CADA DECL (Terminales repetidos pero únicos) ---
+
+    // int i;
+
+    n_decl_1 -> n_t1 [label="tipo"]; n_decl_1 -> "id " [label=" "]; n_decl_1 -> "; " [label=" "];
+
+    n_t1 -> "basico " [label=" "];
+
+
+
+    // int j;
+
+    n_decl_2 -> n_t2 [label="tipo"]; n_decl_2 -> "id  " [label=" "]; n_decl_2 -> ";  " [label=" "];
+
+    n_t2 -> "basico  " [label=" "];
+
+
+
+    // float v;
+
+    n_decl_3 -> n_t3 [label="tipo"]; n_decl_3 -> "id   " [label=" "]; n_decl_3 -> ";   " [label=" "];
+
+    n_t3 -> "basico   " [label=" "];
+
+
+
+    // float x;
+
+    n_decl_4 -> n_t4 [label="tipo"]; n_decl_4 -> "id    " [label=" "]; n_decl_4 -> ";    " [label=" "];
+
+    n_t4 -> "basico    " [label=" "];
+
+
+
+    // float[100] a;
+
+    n_decl_5 -> n_t5 [label="tipo"]; n_decl_5 -> "id     " [label=" "]; n_decl_5 -> ";     " [label=" "];
+
+    n_t5 -> n_t5_inner [label="tipo"]; n_t5 -> "[" [label=" "]; n_t5 -> "num" [label=" "]; n_t5 -> "]" [label=" "];
+
+    n_t5_inner -> "basico     " [label=" "];
+
+
+
+    // --- INSTRS (While principal) ---
+
+    n_instrs_raiz -> n_instrs_eps [label="instrs"];
+
+    n_instrs_raiz -> n_instr_while [label="instr"];
+
+    n_instrs_eps [label="ε"];
+
+
+
+    n_instr_while -> "while" [label=" "];
+
+    n_instr_while -> "(" [label=" "];
+
+    n_instr_while -> n_bool_w [label="bool"];
+
+    n_instr_while -> ")" [label=" "];
+
+    n_instr_while -> n_instr_bloque_w [label="instr"];
+
+
+
+    // while( true )
+
+    n_bool_w -> n_comb_w [label="comb"];
+
+    n_comb_w -> n_igual_w [label="igualdad"];
+
+    n_igual_w -> n_rel_w [label="rel"];
+
+    n_rel_w -> n_expr_w [label="expr"];
+
+    n_expr_w -> n_term_w [label="term"];
+
+    n_term_w -> n_unario_w [label="unario"];
+
+    n_unario_w -> n_factor_w [label="factor"];
+
+    n_factor_w -> "true" [label=" "];
+
+
+
+    // --- BLOQUE INTERNO ---
+
+    n_instr_bloque_w -> n_bloque_int [label="bloque"];
+
+    n_bloque_int -> " { " [label=" "];
+
+    n_bloque_int -> n_decls_int [label="decls"];
+
+    n_bloque_int -> n_instrs_int [label="instrs"];
+
+    n_bloque_int -> " } " [label=" "];
+
+    n_decls_int [label="ε"];
+
+
+
+    // --- CUERPO DEL WHILE (Recursión para cada instrucción del archivo prueba) ---
+
+    n_instrs_int -> n_ins_i5 [label="instrs"];
+
+    n_instrs_int -> n_instr_final [label="instr"]; // a[j] = x;
+
+
+
+    n_ins_i5 -> n_ins_i4; n_ins_i5 -> n_instr_a2; // a[i] = a[j];
+
+    n_ins_i4 -> n_ins_i3; n_ins_i4 -> n_instr_a1; // x = a[i];
+
+    n_ins_i3 -> n_ins_i2; n_ins_i3 -> n_instr_if; // if(...) break;
+
+    n_ins_i2 -> n_ins_i1; n_ins_i2 -> n_instr_do2; // do j...
+
+    n_ins_i1 -> n_ins_eps2; n_ins_i1 -> n_instr_do1; // do i...
+
+    n_ins_eps2 [label="ε"];
+
+
+
+    // --- EJEMPLO DE DERIVACIÓN COMPLETA PARA DO-WHILE (Para no repetir 1000 nodos) ---
+
+    // do i = i + 1; while ( a[i] < v );
+
+    n_instr_do1 -> "do" [label=" "];
+
+    n_instr_do1 -> n_do_ins [label="instr"];
+
+    n_instr_do1 -> "while " [label=" "];
+
+    n_instr_do1 -> " ( " [label=" "];
+
+    n_instr_do1 -> n_do_bool [label="bool"];
+
+    n_instr_do1 -> " ) " [label=" "];
+
+    n_instr_do1 -> " ; " [label=" "];
+
+
+
+    // i = i + 1;
+
+    n_do_ins -> n_loc_i [label="loc"];
+
+    n_do_ins -> " = " [label=" "];
+
+    n_do_ins -> n_bool_asig [label="bool"];
+
+    n_do_ins -> "  ;  " [label=" "];
+
+    n_loc_i -> "id      " [label=" "];
+
+
+
+    // i + 1
+
+    n_bool_asig -> n_comb_a [label="comb"];
+
+    n_comb_a -> n_igual_a [label="igualdad"];
+
+    n_igual_a -> n_rel_a [label="rel"];
+
+    n_rel_a -> n_expr_a [label="expr"];
+
+    n_expr_a -> n_expr_left [label="expr"];
+
+    n_expr_a -> " + " [label=" "];
+
+    n_expr_a -> n_term_right [label="term"];
+
+    
+
+    n_expr_left -> n_term_l -> n_unario_l -> n_factor_l -> n_loc_l -> "id       " [label=" "];
+
+    n_term_right -> n_unario_r -> n_factor_r -> "num " [label=" "];
+
+
+
+    // a[i] < v
+
+    n_do_bool -> n_comb_c [label="comb"];
+
+    n_comb_c -> n_igual_c [label="igualdad"];
+
+    n_igual_c -> n_rel_c [label="rel"];
+
+    n_rel_c -> n_expr_c1 [label="expr"];
+
+    n_rel_c -> " < " [label=" "];
+
+    n_rel_c -> n_expr_c2 [label="expr"];
+
+
+
+    // a[i]
+
+    n_expr_c1 -> n_term_c1 -> n_unario_c1 -> n_factor_c1 -> n_loc_c1 [label="loc"];
+
+    n_loc_c1 -> "id        " [label=" "];
+
+    n_loc_c1 -> " [ " [label=" "];
+
+    n_loc_c1 -> n_bool_ind [label="bool"];
+
+    n_loc_c1 -> " ] " [label=" "];
+
+    n_bool_ind -> n_comb_ind -> n_igual_ind -> n_rel_ind -> n_expr_ind -> n_term_ind -> n_unario_ind -> n_factor_ind -> n_loc_ind -> "id         " [label=" "];
+
+
+
+    // v
+
+    n_expr_c2 -> n_term_c2 -> n_unario_c2 -> n_factor_c2 -> n_loc_c2 -> "id          " [label=" "];
+
+
+
+    // --- EL RESTO SIGUE LA MISMA LÓGICA DE REPETICIÓN ---
+
+    n_instr_if [label="instr (if)"];
+
+    n_instr_a1 [label="instr (x=a[i])"];
+
+    n_instr_a2 [label="instr (a[i]=a[j])"];
+
+    n_instr_final [label="instr (a[j]=x)"];
+
+}
